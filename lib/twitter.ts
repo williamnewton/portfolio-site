@@ -5,7 +5,8 @@
 // You can view previous version with react-static-tweets in the PR commits
 // https://github.com/leerob/leerob.io/pull/564
 export const getTweets = async (ids) => {
-  if (ids.length === 0) {
+  // Without an API token the request can only fail, so skip it.
+  if (ids.length === 0 || !process.env.TWITTER_API_TOKEN) {
     return [];
   }
 
@@ -30,6 +31,10 @@ export const getTweets = async (ids) => {
   );
 
   const tweets = await response.json();
+  if (!tweets?.data) {
+    // API error (bad/expired token, rate limit, ...): render without tweets
+    return [];
+  }
 
   const getAuthorInfo = (author_id) => {
     return tweets.includes.users.find((user) => user.id === author_id);
